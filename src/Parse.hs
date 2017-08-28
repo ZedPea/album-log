@@ -85,12 +85,13 @@ getName cut = do
     name' <- (`safeInit` cut) <$> many (noneOf ['-', '\\', '\r', '\n'])
     
     name2 <- optionMaybe $ do
-                string "\\-"
-                getName cut
+        string "\\-"
+        getName cut
 
     case name2 of
         Nothing -> return name'
         Just name2' -> return $ name' ++ "\\" ++ name2'
+
     where safeInit [] _ = []
           safeInit x True = init x
           safeInit x _ = x
