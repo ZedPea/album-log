@@ -5,3 +5,4 @@ packages:
 extra-deps:
 - dates-0.2.2.1
 resolver: lts-9.2
+install-ghc: true
