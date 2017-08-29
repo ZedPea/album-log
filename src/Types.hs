@@ -1,6 +1,7 @@
 module Types where
 
 import Data.Time (Day)
+import Data.Char (toLower)
 
 data FileInfo = FileInfo {
     totalListened :: Integer,
@@ -12,9 +13,19 @@ data Artist = Artist {
     artistName :: String,
     numListened :: Integer,
     albums :: [Album]
-} deriving (Show)
+} deriving (Show, Eq)
 
 data Album = Album {
     albumName :: String,
     dateListenedTo :: Maybe Day
-} deriving (Show)
+} deriving (Show, Eq)
+
+instance Ord Album where
+    compare a b = compare (low $ albumName a) (low $ albumName b)
+
+instance Ord Artist where
+    compare a b = compare (low $ artistName a) (low $ artistName b)
+
+--case insensitive sorting
+low :: String -> String
+low = map toLower

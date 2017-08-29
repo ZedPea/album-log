@@ -28,10 +28,14 @@ Then either add ~/.local/bin to your path and run
 
 `album-log filename`
 
-Where filename is the file you want parsed.
-
-More options and details on the file layout will come later.
-
 Or, run
 
 `stack exec album-log filename`
+
+Where filename is the file you want parsed.
+
+Currently the program opens the file specified, parses it, and outputs the decoded file to output.txt
+
+It will sort artists and albums case insensitively.
+
+More options and details on the file layout will come later.

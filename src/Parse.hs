@@ -9,21 +9,20 @@ where
 import Text.Parsec (Parsec, ParseError, string, digit, many1, oneOf, endOfLine,
                     tab, many, noneOf, try, (<|>), eof, char, optionMaybe)
 import Text.Parsec.String (parseFromFile)
-
 import qualified Text.Parsec as P (parse)
-
 
 import Data.Time (Day(..), parseTimeM, defaultTimeLocale)
 import Data.Maybe (fromMaybe)
 import Control.Monad (void)
 
 import Types
+import Sort (sortFileInfo)
 
 parseFileName :: String -> IO (Either ParseError FileInfo)
-parseFileName = parseFromFile parseFile
+parseFileName s = fmap sortFileInfo <$> parseFromFile parseFile s
 
 parse :: String -> Either ParseError FileInfo
-parse = P.parse parseFile ""
+parse = fmap sortFileInfo <$> P.parse parseFile ""
 
 parseFile :: Parsec String () FileInfo
 parseFile = do
@@ -103,7 +102,7 @@ parseAlbum :: Parsec String () Album
 parseAlbum = do
     void (many1 $ char ' ') <|> void tab
 
-    album <- getName False
+    album <- trim <$> getName False
 
     date <- optionMaybe $ do
         string "- "
@@ -112,3 +111,7 @@ parseAlbum = do
     endOfLine
 
     return $ Album album date
+    where trim xs
+            | null xs = []
+            | last xs == ' ' = init xs
+            | otherwise = xs

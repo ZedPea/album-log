@@ -3,21 +3,17 @@
 
 name:                album-log
 version:             0.1.0.0
--- synopsis:            
--- description:         
 license:             BSD3
 license-file:        LICENSE
 author:              ZedPea
 maintainer:          zp+github@zacharypalmer.co.uk
--- copyright:           
 category:            Sound
 build-type:          Simple
 cabal-version:       >=1.10
 
 executable album-log
   main-is:             Main.hs
-  other-modules:       Parse, Types
-  -- other-extensions:    
+  other-modules:       Parse, Types, Decode, Sort
   build-depends:       base >=4.9 && <4.10, time, parsec
   hs-source-dirs:      src
   default-language:    Haskell2010
