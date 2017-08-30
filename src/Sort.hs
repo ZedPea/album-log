@@ -5,10 +5,11 @@ module Sort
 where
 
 import Data.List (sort)
+import Control.Lens ((&), (^.), (.~))
 
 import Types
 
 sortFileInfo :: FileInfo -> FileInfo
-sortFileInfo f@(FileInfo _ _ a) = f { artists = sortArtists a }
+sortFileInfo f = f & artists .~ sortArtists (f^.artists)
     where sortArtists = sort . map sortAlbums
-          sortAlbums a'@(Artist _ _ a'') = a' { albums = sort a'' }
+          sortAlbums a = a & albums .~ sort (a^.albums)

@@ -1,30 +1,38 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 module Types where
 
 import Data.Time (Day)
 import Data.Char (toLower)
+import Control.Lens (makeLenses, (^.))
 
 data FileInfo = FileInfo {
-    totalListened :: Integer,
-    albumsPerDate :: [(Day, Integer)],
-    artists :: [Artist]
+    _totalListened :: Integer,
+    _albumsPerDate :: [(Day, Integer)],
+    _artists :: [Artist]
 } deriving (Show)
 
 data Artist = Artist {
-    artistName :: String,
-    numListened :: Integer,
-    albums :: [Album]
+    _artistName :: String,
+    _numListened :: Integer,
+    _albums :: [Album]
 } deriving (Show, Eq)
 
 data Album = Album {
-    albumName :: String,
-    dateListenedTo :: Maybe Day
+    _albumName :: String,
+    _dateListenedTo :: Maybe Day
 } deriving (Show, Eq)
 
+--have to derive lenses before using in instance
+makeLenses ''FileInfo
+makeLenses ''Artist
+makeLenses ''Album
+
 instance Ord Album where
-    compare a b = compare (low $ albumName a) (low $ albumName b)
+    compare a b = compare (low $ a^.albumName) (low $ b^.albumName)
 
 instance Ord Artist where
-    compare a b = compare (low $ artistName a) (low $ artistName b)
+    compare a b = compare (low $ a^.artistName) (low $ b^.artistName)
 
 --case insensitive sorting
 low :: String -> String

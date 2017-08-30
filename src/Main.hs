@@ -8,6 +8,7 @@ import System.Environment (getArgs)
 
 import Parse (parseFileName)
 import Decode (decode)
+import Actions (addInteractive)
 
 main :: IO ()
 main = do
@@ -15,4 +16,6 @@ main = do
     tryParse <- parseFileName file
     case tryParse of
         Left err -> print err
-        Right parsed -> writeFile "output.txt" (decode parsed)
+        Right parsed -> do
+            final <- addInteractive parsed
+            writeFile "output.txt" (decode final)
