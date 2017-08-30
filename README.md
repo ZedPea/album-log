@@ -24,18 +24,26 @@ You need stack installed.
 
 `stack install`
 
-Then either add ~/.local/bin to your path and run 
+#### Running
 
-`album-log filename`
+Either add ~/.local/bin to your path and run 
+
+`album-log`
 
 Or, run
 
-`stack exec album-log filename`
+`stack exec album-log`
 
-Where filename is the file you want parsed.
+You will then be prompted for a file name, an album, and an artist to add.
 
-Currently the program opens the file specified, parses it, and outputs the decoded file to output.txt
+#### Arguments
 
-It will sort artists and albums case insensitively.
+You can pass arguments on the command line.
 
-More options and details on the file layout will come later.
+`album-log --file="/media/albums.txt" --artist="Foo" --album="Bar"`
+
+Quotes are optional but should be used if you have weird characters, spaces, etc
+
+You can specify just the file, or just the album and artist, but don't specify one of the album or artist, specify both.
+
+There is also a --command switch which will be used later for other modes than adding.

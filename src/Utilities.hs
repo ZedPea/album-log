@@ -1,7 +1,8 @@
 module Utilities
 (
     addDash,
-    addEscape
+    addEscape,
+    nonExistentMsg
 )
 where
 
@@ -12,6 +13,10 @@ addDash = replace "\\" "\\-"
 
 addEscape :: String -> String
 addEscape = replace "-" "\\"
+
+nonExistentMsg :: String
+nonExistentMsg = "The specified file doesn't exist or you don't have the \
+                 \the permissiong to open it."
 
 --the below functions are taken from MissingH/Data.List.Utils
 --didn't want to have a large dependency for one function

@@ -15,7 +15,7 @@ import Data.Time (Day(..), parseTimeM, defaultTimeLocale)
 import Data.Maybe (fromMaybe)
 import Control.Monad (void)
 
-import Types
+import Types (FileInfo(..), Artist(..), Album(..))
 import Sort (sortFileInfo)
 
 parseFileName :: String -> IO (Either ParseError FileInfo)
