@@ -81,14 +81,14 @@ parseArtist = do
 
 getName :: Bool -> Parsec String () String
 getName cut = do
-    name' <- (`safeInit` cut) <$> many (noneOf ['-', '\\', '\r', '\n'])
+    name' <- many (noneOf ['-', '\\', '\r', '\n'])
     
     name2 <- optionMaybe $ do
         string "\\-"
         getName cut
 
     case name2 of
-        Nothing -> return name'
+        Nothing -> return $ safeInit name' cut
         Just name2' -> return $ name' ++ "\\" ++ name2'
 
     where safeInit [] _ = []
