@@ -18,10 +18,13 @@ decode f = printf decodeFormatString total num comment albumDateMap
                   artistAlbumMap
 
     where num = f^.totalListened
-          comment = "# EPs included, singles not included."
           albumDateMap = intercalate "\n" $ decodeDates f
           artistAlbumMap = intercalate "\n" $ decodeArtists f
           total = "# TOTAL ALBUMS LISTENED TO"
+          comment = collapseComments (f^.comments)
+
+collapseComments :: [String] -> String
+collapseComments = concatMap (\x -> '#' : x ++ "\n")
 
 decodeDates :: FileInfo -> [String]
 decodeDates f = map decodeDate $ f^.albumsPerDate
@@ -48,7 +51,7 @@ formatDate :: Day -> String
 formatDate = formatTime defaultTimeLocale "%d/%m/%Y"
 
 decodeFormatString :: String
-decodeFormatString = "%s - %d\n%s\n\n%s\n%s\n"
+decodeFormatString = "%s - %d\n%s\n%s\n%s\n"
 
 decodeArtistFormatString :: String
 decodeArtistFormatString = "\n%s - %d\n%s"

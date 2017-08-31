@@ -28,7 +28,7 @@ parseFile :: Parsec String () FileInfo
 parseFile = do
     totalListened' <- parseNumListenedTo
 
-    many1 $ noneOf ['\n', '\r']
+    comments' <- many parseComments
 
     endOfLine
 
@@ -36,11 +36,21 @@ parseFile = do
 
     endOfLine
 
+    optionMaybe endOfLine -- these two option maybes are so blank created files
+                          -- parse correctly
+
     artists' <- many parseArtist
 
-    eof
+    optionMaybe eof
 
-    return $ FileInfo totalListened' albumsPerDate' artists'
+    return $ FileInfo comments' totalListened' albumsPerDate' artists'
+
+parseComments :: Parsec String () String
+parseComments = do
+    char '#'
+    msg <- many1 $ noneOf ['\n', '\r']
+    endOfLine
+    return msg
 
 parseNumListenedTo :: Parsec String () Integer
 parseNumListenedTo = do
@@ -51,11 +61,11 @@ parseNumListenedTo = do
 
 parseDateNumPair :: Parsec String () (Day, Integer)
 parseDateNumPair = try $ do --need input returned to parser if failed
-    endOfLine
     string "# "
     date <- parseDate
     string " - "
     num <- parseNum
+    endOfLine
     return (date, num)
 
 parseDate :: Parsec String () Day
@@ -65,8 +75,6 @@ parseDate = f <$> many1 (oneOf "0123456789/")
 
 parseArtist :: Parsec String () Artist
 parseArtist = do
-    endOfLine
-
     name <- getName True
 
     string "- "
@@ -76,6 +84,8 @@ parseArtist = do
     endOfLine
     
     albums' <- many1 parseAlbum
+
+    void endOfLine <|> eof
 
     return $ Artist name num albums'
 

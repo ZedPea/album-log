@@ -1,8 +1,6 @@
 # album-log
 A set of utilities for logging albums listened to, the date listened to, the total unique albums listened to, etc
 
-Mainly started to try out using parsec on my previously manually curated file layout, which grew unwieldly to edit manually.
-
 ## Installation
 
 #### Install prerequisited
@@ -46,4 +44,13 @@ Quotes are optional but should be used if you have weird characters, spaces, etc
 
 You can specify just the file, or just the album and artist, but don't specify one of the album or artist, specify both.
 
-There is also a --command switch which will be used later for other modes than adding.
+You can also specify the command to run. The default command is to add, but you can also specify `album-log --command=create`
+
+This will create a sample file which can then be manually added to or parsed and then added to.
+
+You can specify a filepath to write the sample file to, or you can leave it blank and it will be written to output.txt
+
+`album-log --command=create --file="albums.txt"`
+
+
+Currently the program writes the new file to output.txt, however once the program is mature it will overwrite the old file. I'm doing it this way so I don't accidentaly nuke my file ;)

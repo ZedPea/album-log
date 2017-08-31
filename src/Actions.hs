@@ -28,9 +28,14 @@ addInteractive f = do
 add :: FileInfo -> String -> String -> IO FileInfo
 add f artist album = do
     date <- utctDay <$> getCurrentTime
-    return $ if artist' `elem` artistNames
-        then appendAlbum f artist' album' date
-        else insertArtist f artist' album' date
+
+    let new = if artist' `elem` artistNames
+                then appendAlbum f artist' album' date
+                else insertArtist f artist' album' date
+
+    return $ new & totalListened +~ 1
+                 & albumsPerDate %~ updateAlbumDates date (f^.totalListened)
+
     where artistNames = f^..artists.traversed.artistName
           artist' = addEscape artist
           album' = addEscape album
@@ -48,3 +53,15 @@ insertArtist :: FileInfo -> String -> String -> Day -> FileInfo
 insertArtist f artist album date = sortFileInfo $
     f & artists .~ (newArtist : f^.artists)
     where newArtist = Artist artist 1 [Album album (Just date)]
+
+updateAlbumDates :: Day -> Integer -> [(Day, Integer)] -> [(Day, Integer)]
+updateAlbumDates d n [] = [(d, n+1)] -- n can only really be 0 in this case
+                                     -- because if there are no date markings
+                                     -- then no albums have been listened to.
+                                     -- It could also be a dodgy file i guess
+                                     -- so might as well increment n instead
+
+updateAlbumDates d n mapping = (d, n+1) : f mapping 
+    where f
+            | d == fst (head mapping) = tail
+            | otherwise = id

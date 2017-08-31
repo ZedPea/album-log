@@ -7,6 +7,7 @@ import Data.Char (toLower)
 import Control.Lens (makeLenses, (^.))
 
 data FileInfo = FileInfo {
+    _comments :: [String],
     _totalListened :: Integer,
     _albumsPerDate :: [(Day, Integer)],
     _artists :: [Artist]
