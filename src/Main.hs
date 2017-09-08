@@ -9,15 +9,16 @@ where
 
 import System.IO (stdout, hFlush, openTempFile, hPutStr, hClose)
 import System.Directory (doesFileExist, renameFile, removeFile)
-import Control.Monad (unless)
-import Data.Maybe (fromMaybe)
+import Control.Monad (unless, liftM2)
 import Control.Exception (bracket, catch, throwIO)
 import System.IO.Error (isDoesNotExistError)
-import System.Console.CmdArgs
+import Data.Char (toLower)
+import System.Console.CmdArgs (Data, Typeable, (&=), help, def, typFile,
+                               program, cmdArgs)
 
 import Parse (parseFileName)
 import Decode (decode)
-import Actions (addInteractive, add)
+import Actions (add, createFile, remove)
 import Utilities (nonExistentMsg)
 import Types
 
@@ -38,35 +39,56 @@ albumLog = AlbumLog {
 
 main :: IO ()
 main = do
-    args' <- cmdArgs albumLog
-    case command args' of
+    args <- cmdArgs albumLog
+
+    case command args of
         "add" -> do
-            filepath <- getFile (file args')
-            tryParse <- parseFileName filepath
-
+            tryParse <- simpleSetup
             case tryParse of
-                Left err -> putStrLn $ "Error parsing file: " ++ show err
-                Right parsed -> do
-                    final <- if any null [artist args', album args']
-                                then addInteractive parsed
-                                else add parsed (artist args') (album args')
+                Left err -> putStrLn err
+                Right f -> do
+                    (artist', album') <- getArtistAlbum args
+                    final <- add f artist' album'
+                    writeToDisk final
 
-                    writeToDisk Nothing final
+        "remove" -> do
+            tryParse <- simpleSetup
+            case tryParse of
+                Left err -> putStrLn err
+                Right f -> do
+                    (artist', album') <- getArtistAlbum args
+                    let finalEither = remove f artist' album'
+                    case finalEither of
+                        Left err -> putStrLn err
+                        Right final -> writeToDisk final
 
-                    {- uncomment in release verion
-                    writeToDisk (if exists 
-                                    then Just (file args') 
-                                    else Nothing) new
-                    -}
-
-        "create" -> do
-            let new = FileInfo [] 0 [] []
-
-            writeToDisk (if null $ file args' -- this can fail if file can't
-                            then Nothing      -- be created
-                            else Just $ file args') new
+        "create" -> writeToDisk createFile
 
         x -> putStrLn $ "Unknown operation: " ++ x
+
+simpleSetup :: IO (Either String FileInfo)
+simpleSetup = do
+    args <- cmdArgs albumLog
+    filepath <- getFile (file args)
+    tryParse <- parseFileName filepath
+    
+    case tryParse of
+        Left err -> return . Left $ "Error parsing file: " ++ show err
+        --rewrap either ...
+        Right parsed -> return $ Right parsed
+
+getArtistAlbum :: AlbumLog -> IO (String, String)
+getArtistAlbum args = liftM2 (\x y -> (x, y)) 
+    (map toLower <$> getString (artist args) "Artist name: ")
+    (map toLower <$> getString (album args) "Album name: ")
+          
+getString :: String -> String -> IO String
+getString s msg
+    | not $ null s = return s
+    | otherwise = do
+        putStr msg
+        hFlush stdout
+        getLine
 
 getFile :: FilePath -> IO FilePath
 getFile f = do
@@ -79,23 +101,34 @@ getFile f = do
             hFlush stdout
             getFile =<< getLine
 
-writeToDisk :: Maybe FilePath -> FileInfo -> IO ()
-writeToDisk filepath f = bracket
-    (openTempFile "." "album-log.tmp")
+-- if the file doesn't exists to begin with, renaming the file will
+-- fail, and so the tmp file will never be removed.
+-- this could occur because the user deleted it for example
 
-    -- if the file doesn't exists to begin with, renaming the file will
-    -- fail, and so the tmp file will never be removed.
-    -- this could occur because the user deleted it for example
+-- so we have to attempt to remove it rather than just removing it
+-- regardless, as when everything goes ok, removing a non existant file
+-- throws an error
+writeToDisk :: FileInfo -> IO ()
+writeToDisk f = do
 
-    -- so we have to attempt to remove it rather than just removing it
-    -- regardless, as when everything goes ok, removing a non existant file
-    -- throws an error
-    (\(tmpFile, tmpHandle) -> hClose tmpHandle >> removeIfExists tmpFile)
+    --args <- cmdArgs albumLog
+    
+    bracket  (openTempFile "." "album-log.tmp")
 
-    (\(tmpFile, tmpHandle) -> do
+             (\(tmpFile, tmpHandle) -> do
+                hClose tmpHandle
+                removeIfExists tmpFile)
 
-        hPutStr tmpHandle (decode f)
-        renameFile tmpFile $ fromMaybe "output.txt" filepath)
+             (\(tmpFile, tmpHandle) -> do
+                hPutStr tmpHandle (decode f)
+                --in place update
+                {-renameFile tmpFile $ if null (file args)
+                    then "output.txt"
+                    else file args-}
+
+                renameFile tmpFile "output.txt")
+
+    return ()
 
 -- https://stackoverflow.com/a/8502391
 removeIfExists :: FilePath -> IO ()

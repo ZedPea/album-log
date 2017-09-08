@@ -42,15 +42,26 @@ You can pass arguments on the command line.
 
 Quotes are optional but should be used if you have weird characters, spaces, etc
 
-You can specify just the file, or just the album and artist, but don't specify one of the album or artist, specify both.
+You can specify as many or as few of these as you like on the command line, you will be prompted for missing ones.
 
-You can also specify the command to run. The default command is to add, but you can also specify `album-log --command=create`
+Currently the program writes the new file to output.txt, however once the program is mature it will overwrite the old file. 
+I'm doing it this way so I don't accidentaly nuke my file ;)
 
-This will create a sample file which can then be manually added to or parsed and then added to.
+#### Commands
 
-You can specify a filepath to write the sample file to, or you can leave it blank and it will be written to output.txt
+##### add
+`album-log --command=add`
 
-`album-log --command=create --file="albums.txt"`
+This is the default command, it doesn't need to be specified.
 
+##### create
+`album-log --command=create --file=newfile.txt`
 
-Currently the program writes the new file to output.txt, however once the program is mature it will overwrite the old file. I'm doing it this way so I don't accidentaly nuke my file ;)
+This creates a new parsable file, with empty content. Specify the file you wish it to be outputted to, or it will output to output.txt.
+
+##### remove
+`album-log --command=remove --album=mistyped-album --artist=mistyped-artist`
+
+This removes the specified album from the file. It will alert you if it couldn't find the album you specified.
+
+Note that this can make your album/date mapping inaccurate. 
