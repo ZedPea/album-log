@@ -85,10 +85,12 @@ writeToDisk filepath f = bracket
 
     -- if the file doesn't exists to begin with, renaming the file will
     -- fail, and so the tmp file will never be removed.
-    -- we have to attempt to remove it rather than just removing it
+    -- this could occur because the user deleted it for example
+
+    -- so we have to attempt to remove it rather than just removing it
     -- regardless, as when everything goes ok, removing a non existant file
     -- throws an error
-    (\(tmpFile, tmpHandle) -> removeIfExists tmpFile >> hClose tmpHandle)
+    (\(tmpFile, tmpHandle) -> hClose tmpHandle >> removeIfExists tmpFile)
 
     (\(tmpFile, tmpHandle) -> do
 

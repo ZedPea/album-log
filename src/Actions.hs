@@ -11,7 +11,7 @@ import System.IO (hFlush, stdout)
 
 import Types
 import Sort (sortFileInfo)
-import Utilities (addEscape)
+import Utilities (addEscape, alreadyExists)
 
 addInteractive :: FileInfo -> IO FileInfo
 addInteractive f = do
@@ -26,19 +26,33 @@ addInteractive f = do
     add f artist album
 
 add :: FileInfo -> String -> String -> IO FileInfo
-add f artist album = do
+add f artist' album' = do
     date <- utctDay <$> getCurrentTime
 
-    let new = if artist' `elem` artistNames
-                then appendAlbum f artist' album' date
-                else insertArtist f artist' album' date
+    let dupe = isDupe f artist album
 
-    return $ new & totalListened +~ 1
-                 & albumsPerDate %~ updateAlbumDates date (f^.totalListened)
+    if dupe
+        then putStrLn (alreadyExists artist album) >> return f
+        else do
+            let new | artist `elem` artistNames = apply appendAlbum
+                    | otherwise = apply insertArtist
+                    where apply func = func f artist album date
+
+            return $ new & totalListened +~ 1
+                         & albumsPerDate %~ updateAlbumDates date 
+                                            (f^.totalListened)
 
     where artistNames = f^..artists.traversed.artistName
-          artist' = addEscape artist
-          album' = addEscape album
+          artist = addEscape artist'
+          album = addEscape album'
+
+isDupe :: FileInfo -> String -> String -> Bool
+isDupe f artist album = isDupe' (f^.artists)
+    where isDupe' [] = False
+          isDupe' (x:xs)
+            | x^.artistName == artist && album `elem` x^..albumNames = True
+            | otherwise = isDupe' xs
+          albumNames = albums.traversed.albumName
 
 appendAlbum :: FileInfo -> String -> String -> Day -> FileInfo
 appendAlbum f artist album date = sortFileInfo $ 

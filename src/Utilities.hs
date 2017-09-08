@@ -2,7 +2,8 @@ module Utilities
 (
     addDash,
     addEscape,
-    nonExistentMsg
+    nonExistentMsg,
+    alreadyExists
 )
 where
 
@@ -16,7 +17,11 @@ addEscape = replace "-" "\\"
 
 nonExistentMsg :: String
 nonExistentMsg = "The specified file doesn't exist or you don't have the \
-                 \the permissiong to open it."
+                 \the permission to open it."
+
+alreadyExists :: String -> String -> String
+alreadyExists artist album = artist ++ " - " ++ album ++ 
+                           " already exists in file!"
 
 --the below functions are taken from MissingH/Data.List.Utils
 --didn't want to have a large dependency for one function
