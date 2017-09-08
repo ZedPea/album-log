@@ -83,9 +83,11 @@ remove f artist album
           albumNames = fromJust foundArtist^..albums.traversed.albumName
 
 remove' :: FileInfo -> String -> String -> FileInfo
-remove' f artist album = f & artists %~ map (removeAlbum artist album)
-                           & totalListened -~ 1
-                           & albumsPerDate %~ updateDateListened
+remove' f artist album = 
+    f & artists %~ (removeEmpty . map (removeAlbum artist album))
+      & totalListened -~ 1
+      & albumsPerDate %~ updateDateListened
+    where removeEmpty = filter (\x -> x^.numListened > 0)
 
 removeAlbum :: String -> String -> Artist -> Artist
 removeAlbum artist album a

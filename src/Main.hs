@@ -9,7 +9,8 @@ where
 
 import System.IO (stdout, hFlush, openTempFile, hPutStr, hClose)
 import System.Directory (doesFileExist, renameFile, removeFile)
-import Control.Monad (unless, liftM2)
+import Control.Monad (unless, liftM2, join)
+import Control.Arrow ((***))
 import Control.Exception (bracket, catch, throwIO)
 import System.IO.Error (isDoesNotExistError)
 import Data.Char (toLower)
@@ -56,7 +57,9 @@ main = do
             case tryParse of
                 Left err -> putStrLn err
                 Right f -> do
-                    (artist', album') <- getArtistAlbum args
+                    (artist', album') <- join (***) (map toLower) 
+                                     <$> getArtistAlbum args
+
                     let finalEither = remove f artist' album'
                     case finalEither of
                         Left err -> putStrLn err
@@ -79,8 +82,8 @@ simpleSetup = do
 
 getArtistAlbum :: AlbumLog -> IO (String, String)
 getArtistAlbum args = liftM2 (\x y -> (x, y)) 
-    (map toLower <$> getString (artist args) "Artist name: ")
-    (map toLower <$> getString (album args) "Album name: ")
+    (getString (artist args) "Artist name: ")
+    (getString (album args) "Album name: ")
           
 getString :: String -> String -> IO String
 getString s msg
