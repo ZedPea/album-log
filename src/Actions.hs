@@ -7,7 +7,7 @@ module Actions
 where
 
 import Control.Lens ((^..), (%~), (&), (^.), (.~), (+~), (-~), traversed)
-import Data.Time (Day, getCurrentTime, utctDay)
+import Data.Time (Day, getCurrentTime, getTimeZone, utcToLocalTime, localDay)
 import Data.Maybe (isJust, fromJust)
 import Data.Char (toLower)
 
@@ -20,17 +20,19 @@ createFile = FileInfo [] 0 [] []
 
 add :: FileInfo -> String -> String -> IO FileInfo
 add f artist' album' = do
-    date <- utctDay <$> getCurrentTime
+    utcTime <- getCurrentTime
+    zone <- getTimeZone utcTime
+    let day = localDay $ utcToLocalTime zone utcTime
 
     if isDupe f artist album
         then putStrLn (alreadyExists artist album) >> return f
         else do
             let new | artist `elem` artistNames = apply appendAlbum
                     | otherwise = apply insertArtist
-                    where apply func = func f artist album date
+                    where apply func = func f artist album day
 
             return $ new & totalListened +~ 1
-                         & albumsPerDate %~ updateAlbumDates date 
+                         & albumsPerDate %~ updateAlbumDates day
                                             (f^.totalListened)
 
     where artistNames = f^..artists.traversed.artistName
