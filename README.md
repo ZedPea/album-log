@@ -44,8 +44,7 @@ Quotes are optional but should be used if you have weird characters, spaces, etc
 
 You can specify as many or as few of these as you like on the command line, you will be prompted for missing ones.
 
-Currently the program writes the new file to output.txt, however once the program is mature it will overwrite the old file. 
-I'm doing it this way so I don't accidentaly nuke my file ;)
+The file will be updated in place if you specify a file on the command line.
 
 #### Commands
 

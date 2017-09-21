@@ -8,7 +8,7 @@ module Main
 where
 
 import System.IO (stdout, hFlush, openTempFile, hPutStr, hClose)
-import System.Directory (doesFileExist, renameFile, removeFile)
+import System.Directory (doesFileExist, renameFile, removeFile, copyFile)
 import Control.Monad (unless, liftM2, join)
 import Control.Arrow ((***))
 import Control.Exception (bracket, catch, throwIO)
@@ -112,26 +112,25 @@ getFile f = do
 -- regardless, as when everything goes ok, removing a non existant file
 -- throws an error
 writeToDisk :: FileInfo -> IO ()
-writeToDisk f = do
+writeToDisk f = bracket 
+    (openTempFile "." "album-log.tmp")
+    (uncurry cleanUp)
+    (uncurry renameFunc)
 
-    --args <- cmdArgs albumLog
-    
-    bracket  (openTempFile "." "album-log.tmp")
+    where renameFunc tmpFile tmpHandle = do
+            hPutStr tmpHandle (decode f)
+            hClose tmpHandle
 
-             (\(tmpFile, tmpHandle) -> do
-                hClose tmpHandle
-                removeIfExists tmpFile)
+            args <- cmdArgs albumLog
 
-             (\(tmpFile, tmpHandle) -> do
-                hPutStr tmpHandle (decode f)
-                --in place update
-                {-renameFile tmpFile $ if null (file args)
-                    then "output.txt"
-                    else file args-}
+            if null (file args)
+                then renameFile tmpFile "output.txt"
+                --rename doesn't work across filesystems
+                else copyFile tmpFile (file args)
 
-                renameFile tmpFile "output.txt")
-
-    return ()
+          cleanUp tmpFile tmpHandle = do
+            hClose tmpHandle
+            removeIfExists tmpFile
 
 -- https://stackoverflow.com/a/8502391
 removeIfExists :: FilePath -> IO ()
