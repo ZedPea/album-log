@@ -7,21 +7,25 @@ module Main
 )
 where
 
-import System.IO (stdout, hFlush, openTempFile, hPutStr, hClose)
 import System.Directory (doesFileExist, renameFile, removeFile, copyFile)
 import Control.Monad (unless, liftM2, join)
 import Control.Arrow ((***))
 import Control.Exception (bracket, catch, throwIO)
 import System.IO.Error (isDoesNotExistError)
 import Data.Char (toLower)
-import System.Console.CmdArgs (Data, Typeable, (&=), help, def, typFile,
-                               program, cmdArgs)
+
+import System.IO 
+    (BufferMode(..), hSetBuffering, stdin, stdout, hFlush, openTempFile,
+     hPutStr, hClose)
+                
+import System.Console.CmdArgs 
+    (Data, Typeable, (&=), help, def, typFile, program, cmdArgs)
 
 import Parse (parseFileName)
 import Decode (decode)
 import Actions (add, createFile, remove)
 import Utilities (nonExistentMsg)
-import Types
+import Types (FileInfo)
 
 data AlbumLog = AlbumLog {
     command :: String,
@@ -40,6 +44,8 @@ albumLog = AlbumLog {
 
 main :: IO ()
 main = do
+    hSetBuffering stdin LineBuffering
+
     args <- cmdArgs albumLog
 
     case command args of
