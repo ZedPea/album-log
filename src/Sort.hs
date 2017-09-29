@@ -1,15 +1,22 @@
 module Sort
 (
-    sortFileInfo
+    sortFileInfo,
+    sortFileInfoPure
 )
 where
 
 import Data.List (sort)
-import Control.Lens ((&), (^.), (.~))
+import Control.Lens ((%=), (%~), (&), traversed)
 
-import Types
+import Types (AlbumStateT, FileInfo)
+import Lenses (artists, albums)
 
-sortFileInfo :: FileInfo -> FileInfo
-sortFileInfo f = f & artists .~ sortArtists (f^.artists)
+sortFileInfo :: AlbumStateT ()
+sortFileInfo = do
+    artists.traversed.albums %= sort
+    artists %= sort
+
+sortFileInfoPure :: FileInfo -> FileInfo
+sortFileInfoPure f = f & artists %~ sortArtists
     where sortArtists = sort . map sortAlbums
-          sortAlbums a = a & albums .~ sort (a^.albums)
+          sortAlbums a = a & albums %~ sort

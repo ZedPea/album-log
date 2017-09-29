@@ -13,6 +13,7 @@ import Control.Arrow ((***))
 import Control.Exception (bracket, catch, throwIO)
 import System.IO.Error (isDoesNotExistError)
 import Data.Char (toLower)
+import Control.Monad.Trans.State (execStateT, runStateT)
 
 import System.IO 
     (BufferMode(..), hSetBuffering, stdin, stdout, hFlush, openTempFile,
@@ -55,7 +56,7 @@ main = do
                 Left err -> putStrLn err
                 Right f -> do
                     (artist', album') <- getArtistAlbum args
-                    final <- add f artist' album'
+                    final <- execStateT (add artist' album') f
                     writeToDisk final
 
         "remove" -> do
@@ -66,10 +67,10 @@ main = do
                     (artist', album') <- join (***) (map toLower) 
                                      <$> getArtistAlbum args
 
-                    let finalEither = remove f artist' album'
-                    case finalEither of
-                        Left err -> putStrLn err
-                        Right final -> writeToDisk final
+                    (maybeErr, final) <- runStateT (remove artist' album') f
+                    case maybeErr of
+                        Nothing -> writeToDisk final
+                        Just err -> putStrLn err
 
         "create" -> writeToDisk createFile
 

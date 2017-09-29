@@ -10,8 +10,12 @@ import Data.Time.Format (formatTime, defaultTimeLocale)
 import Text.Printf (printf)
 import Control.Lens ((^.))
 
-import Types
+import Types (FileInfo, Artist, Album)
 import Utilities (addDash)
+
+import Lenses
+    (totalListened, comments, albumsPerDate, artists, artistName, numListened,
+     albums, albumName, dateListenedTo)
 
 decode :: FileInfo -> String
 decode f = printf decodeFormatString total num comment albumDateMap 

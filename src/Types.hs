@@ -1,10 +1,11 @@
-{-# LANGUAGE TemplateHaskell #-}
-
 module Types where
 
 import Data.Time (Day)
 import Data.Char (toLower)
-import Control.Lens (makeLenses, (^.))
+import Control.Monad.Trans.State (StateT, State)
+
+type AlbumStateT a = StateT FileInfo IO a
+type AlbumState a = State FileInfo a
 
 data FileInfo = FileInfo {
     _comments :: [String],
@@ -24,16 +25,11 @@ data Album = Album {
     _dateListenedTo :: Maybe Day
 } deriving (Show, Eq)
 
---have to derive lenses before using in instance
-makeLenses ''FileInfo
-makeLenses ''Artist
-makeLenses ''Album
-
 instance Ord Album where
-    compare a b = compare (low $ a^.albumName) (low $ b^.albumName)
+    compare a b = compare (low $ _albumName a) (low $ _albumName b)
 
 instance Ord Artist where
-    compare a b = compare (low $ a^.artistName) (low $ b^.artistName)
+    compare a b = compare (low $ _artistName a) (low $ _artistName b)
 
 --case insensitive sorting
 low :: String -> String

@@ -16,13 +16,13 @@ import Data.Maybe (fromMaybe)
 import Control.Monad (void)
 
 import Types (FileInfo(..), Artist(..), Album(..))
-import Sort (sortFileInfo)
+import Sort (sortFileInfoPure)
 
 parseFileName :: String -> IO (Either ParseError FileInfo)
-parseFileName s = fmap sortFileInfo <$> parseFromFile parseFile s
+parseFileName s = fmap sortFileInfoPure <$> parseFromFile parseFile s
 
 parse :: String -> Either ParseError FileInfo
-parse = fmap sortFileInfo <$> P.parse parseFile ""
+parse = fmap sortFileInfoPure <$> P.parse parseFile ""
 
 parseFile :: Parsec String () FileInfo
 parseFile = do
