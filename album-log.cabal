@@ -13,7 +13,7 @@ cabal-version:       >=1.10
 
 executable album-log
   main-is:             Main.hs
-  other-modules:       Parse, Types, Decode, Sort, Actions, Utilities
+  other-modules:       Parse, Types, Decode, Sort, Actions, Utilities, Lenses
   build-depends:       base >=4.9 && <4.10, time, parsec, lens, cmdargs,
                        directory, transformers
   hs-source-dirs:      src

@@ -8,11 +8,9 @@ module Main
 where
 
 import System.Directory (doesFileExist, renameFile, removeFile, copyFile)
-import Control.Monad (unless, liftM2, join)
-import Control.Arrow ((***))
+import Control.Monad (unless, liftM2)
 import Control.Exception (bracket, catch, throwIO)
 import System.IO.Error (isDoesNotExistError)
-import Data.Char (toLower)
 import Control.Monad.Trans.State (execStateT, runStateT)
 
 import System.IO 
@@ -64,8 +62,7 @@ main = do
             case tryParse of
                 Left err -> putStrLn err
                 Right f -> do
-                    (artist', album') <- join (***) (map toLower) 
-                                     <$> getArtistAlbum args
+                    (artist', album') <- getArtistAlbum args
 
                     (maybeErr, final) <- runStateT (remove artist' album') f
                     case maybeErr of

@@ -7,7 +7,6 @@ module Actions
 where
 
 import Data.Time (Day, getCurrentTime, getTimeZone, utcToLocalTime, localDay)
-import Data.Char (toLower)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.State (get)
 import Data.Monoid (Any(..))
@@ -83,7 +82,7 @@ remove :: String -> String -> AlbumStateT (Maybe String)
 remove artist album = do
     result <- zoom (artists.traversed.filtered isArtist) $ Any <$> do
         s <- get
-        if album `elem` map (map toLower) (s^..albums.traversed.albumName)
+        if album `elem` (s^..albums.traversed.albumName)
             then do
                 albums %= someFunc
                 numListened -= 1
@@ -104,7 +103,7 @@ remove artist album = do
     where isArtist a = a^.artistName == artist
           someFunc [] = []
           someFunc (a:as)
-            | map toLower (a^.albumName) == album = as
+            | a^.albumName == album = as
             | otherwise = a : someFunc as
 
 --this does invalidate the correctness of the date / album mapping, but it's
