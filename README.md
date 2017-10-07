@@ -1,5 +1,5 @@
 # album-log
-A set of utilities for logging albums listened to, the date listened to, the total unique albums listened to, etc
+Log albums listened to, the date listened to, the total unique albums listened to, etc
 
 ## Installation
 
