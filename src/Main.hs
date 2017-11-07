@@ -12,10 +12,8 @@ import Control.Monad (unless, liftM2)
 import Control.Exception (bracket, catch, throwIO)
 import System.IO.Error (isDoesNotExistError)
 import Control.Monad.Trans.State (execStateT, runStateT)
-
-import System.IO 
-    (BufferMode(..), hSetBuffering, stdin, stdout, hFlush, openTempFile,
-     hPutStr, hClose)
+import System.Console.Haskeline (runInputT, defaultSettings, getInputLine)
+import System.IO (openTempFile, hPutStr, hClose)
                 
 import System.Console.CmdArgs 
     (Data, Typeable, (&=), help, def, typFile, program, cmdArgs)
@@ -43,8 +41,6 @@ albumLog = AlbumLog {
 
 main :: IO ()
 main = do
-    hSetBuffering stdin LineBuffering
-
     args <- cmdArgs albumLog
 
     case command args of
@@ -92,10 +88,11 @@ getArtistAlbum args = liftM2 (\x y -> (x, y))
 getString :: String -> String -> IO String
 getString s msg
     | not $ null s = return s
-    | otherwise = do
-        putStr msg
-        hFlush stdout
-        getLine
+    | otherwise = runInputT defaultSettings $ do
+        input <- getInputLine msg
+        case input of
+            Nothing -> return ""
+            Just x -> return x
 
 getFile :: FilePath -> IO FilePath
 getFile f = do
@@ -104,9 +101,13 @@ getFile f = do
         then return f
         else do
             unless (null f) $ putStrLn nonExistentMsg
-            putStr "File to open/parse: "
-            hFlush stdout
-            getFile =<< getLine
+            path <- runInputT defaultSettings $ do
+                input <- getInputLine "File to open/parse: "
+                case input of
+                    Nothing -> return ""
+                    Just x -> return x
+
+            getFile path
 
 -- if the file doesn't exists to begin with, renaming the file will
 -- fail, and so the tmp file will never be removed.
